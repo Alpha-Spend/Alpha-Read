@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#806DB0">
+<title>Alpha Read</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-primary:        #806DB0;
+  --color-primary-soft:   #E5DDF2;
+  --color-primary-strong: #4E4173;
+  --color-secondary:      #6E8CA6;
+  --color-secondary-soft: #E7EDF3;
+  --color-accent-rose:    #C27E93;
+  --color-accent-amber:   #D0AE63;
+  --color-accent-taupe:   #8C7660;
+  --color-bg:        #FAF7F2;
+  --color-surface:   #FFFFFF;
+  --color-surface-2: #F4EFE8;
+  --color-border:    #E7DFD3;
+  --color-text:      #3D362F;
+  --color-text-muted:#766B5F;
+  --color-text-faint:#A89C8D;
+  --color-success: #7FA070;
+  --color-warning: #D9B673;
+  --color-danger:  #C57A7A;
+  --font-heading: 'Quicksand', system-ui, sans-serif;
+  --font-body:    'Nunito Sans', system-ui, sans-serif;
+  --text-display: 28px; --text-h1: 24px; --text-h2: 20px; --text-h3: 17px;
+  --text-body: 16px; --text-small: 14px; --text-caption: 12px;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-pill: 999px;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px;
+}
+[data-theme="dark"] {
+  --color-primary:        #B8A9D9;
+  --color-primary-soft:   #3A3150;
+  --color-primary-strong: #CFC2E6;
+  --color-secondary:      #A3BACC;
+  --color-secondary-soft: #2C3845;
+  --color-accent-rose:    #DDA9B8;
+  --color-accent-amber:   #E8D49A;
+  --color-accent-taupe:   #C9B9A5;
+  --color-bg:        #211C28;
+  --color-surface:   #2A2433;
+  --color-surface-2: #332B3D;
+  --color-border:    #3D3547;
+  --color-text:      #EEE9F2;
+  --color-text-muted:#B4AABD;
+  --color-text-faint:#796F84;
+  --color-success: #93B083;
+  --color-warning: #E8D49A;
+  --color-danger:  #D69191;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--color-bg); color: var(--color-text);
+  font-family: var(--font-body); font-size: var(--text-body); line-height: 1.6;
+  -webkit-font-smoothing: antialiased; transition: background .35s ease, color .35s ease;
+}
+h1, h2, h3 { font-family: var(--font-heading); font-weight: 500; line-height: 1.25; margin: 0; }
+.wrap { max-width: 760px; margin: 0 auto; padding: var(--space-8) var(--space-4) var(--space-12); }
+
+/* header */
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); }
+.eyebrow { font-family: var(--font-heading); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; font-size: var(--text-caption); color: var(--color-primary); margin: 0 0 var(--space-1); }
+.head h1 { font-size: var(--text-display); font-weight: 600; }
+.head .sub { color: var(--color-text-muted); font-size: var(--text-small); margin-top: var(--space-1); font-style: italic; }
+.icon-btn {
+  flex: none; display: inline-flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-heading); font-weight: 500; font-size: var(--text-small);
+  color: var(--color-text); background: var(--color-surface);
+  border: 1px solid var(--color-border); border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-3); cursor: pointer; transition: all .2s ease;
+}
+.icon-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.icon-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* hero / today */
+.hero {
+  background: var(--color-primary); color: #fff; border-radius: var(--radius-lg);
+  padding: var(--space-6); margin-bottom: var(--space-6);
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6);
+}
+[data-theme="dark"] .hero { color: #211C28; }
+.hero .blk .k { font-family: var(--font-heading); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: var(--text-caption); opacity: .8; }
+.hero .blk .big { font-family: var(--font-heading); font-weight: 600; font-size: 34px; line-height: 1.1; margin-top: 2px; }
+.hero .blk .big small { font-size: var(--text-body); font-weight: 500; opacity: .8; }
+.hero .blk .note { font-size: var(--text-caption); opacity: .85; margin-top: 2px; }
+.hero .divider { width: 1px; align-self: stretch; background: rgba(255,255,255,.28); }
+[data-theme="dark"] .hero .divider { background: rgba(0,0,0,.18); }
+.hero .verdict { margin-left: auto; font-family: var(--font-heading); font-weight: 500; font-size: var(--text-small); max-width: 16ch; text-align: right; }
+
+/* controls */
+.controls { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-6); }
+.chip-btn {
+  font-family: var(--font-heading); font-weight: 500; font-size: var(--text-small);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill);
+  background: var(--color-surface); color: var(--color-text-muted);
+  border: 1px solid var(--color-border); cursor: pointer; transition: all .18s ease;
+}
+.chip-btn:hover { border-color: var(--color-primary); }
+.chip-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+[data-theme="dark"] .chip-btn.active { color: #211C28; }
+.add-btn { margin-left: auto; }
+
+/* book card */
+.book { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-4); }
+.book .top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+.book .badges { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.pill { font-family: var(--font-heading); font-weight: 500; font-size: var(--text-caption); padding: 3px var(--space-3); border-radius: var(--radius-pill); display: inline-flex; align-items: center; gap: 6px; }
+.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tone); }
+.pill.tone { background: color-mix(in srgb, var(--tone) 16%, transparent); color: var(--tone); }
+[data-theme="dark"] .pill.tone { background: color-mix(in srgb, var(--tone) 24%, transparent); }
+.period-tag { font-family: var(--font-heading); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-size: var(--text-caption); color: var(--color-text-faint); }
+.book h3 { font-size: var(--text-h2); font-weight: 600; margin-top: var(--space-3); }
+.book .author { color: var(--color-text-muted); font-size: var(--text-small); }
+.edit-icon { flex: none; background: none; border: 0; color: var(--color-text-faint); cursor: pointer; padding: var(--space-1); border-radius: var(--radius-sm); line-height: 0; }
+.edit-icon:hover { color: var(--color-primary); background: var(--color-surface-2); }
+
+/* progress */
+.pwrap { margin-top: var(--space-4); }
+.ptrack { position: relative; height: 10px; background: var(--color-surface-2); border-radius: var(--radius-pill); }
+.pfill { position: absolute; inset: 0 auto 0 0; border-radius: var(--radius-pill); background: var(--tone); transition: width .4s ease; }
+.pmarker { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--color-text); border-radius: 2px; }
+.pmeta { display: flex; justify-content: space-between; margin-top: var(--space-2); font-size: var(--text-caption); color: var(--color-text-faint); font-family: var(--font-heading); }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin-top: var(--space-4); text-align: center; }
+.stat { background: var(--color-surface-2); border-radius: var(--radius-md); padding: var(--space-3) var(--space-2); }
+.stat .v { font-family: var(--font-heading); font-weight: 600; font-size: var(--text-h2); color: var(--tone); line-height: 1; }
+.stat .l { font-size: var(--text-caption); color: var(--color-text-muted); margin-top: var(--space-2); line-height: 1.3; }
+.togo { margin-top: var(--space-3); font-size: var(--text-small); color: var(--color-text-muted); }
+.togo b { color: var(--color-text); font-weight: 700; }
+.finished-row { margin-top: var(--space-4); display: flex; align-items: center; gap: var(--space-2); color: var(--color-secondary); font-family: var(--font-heading); font-weight: 500; font-size: var(--text-small); }
+
+/* log action */
+.logbar { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+.log-toggle { width: 100%; font-family: var(--font-heading); font-weight: 500; font-size: var(--text-small); color: var(--color-text); background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); cursor: pointer; transition: all .18s ease; }
+.log-toggle:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.log-edit { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.log-edit span { font-size: var(--text-small); color: var(--color-text-muted); }
+.page-input { width: 90px; font-family: var(--font-body); font-size: var(--text-body); color: var(--color-text); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); }
+.page-input:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+/* buttons */
+.btn { font-family: var(--font-heading); font-weight: 500; font-size: var(--text-small); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); cursor: pointer; border: 1px solid transparent; transition: all .18s ease; }
+.btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.btn-primary { background: var(--color-primary); color: #fff; }
+[data-theme="dark"] .btn-primary { color: #211C28; }
+.btn-primary:hover { background: var(--color-primary-strong); }
+.btn-primary:disabled { background: var(--color-border); color: var(--color-text-faint); cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--color-text-muted); }
+.btn-ghost:hover { background: var(--color-surface-2); }
+.btn-danger-ghost { background: transparent; color: var(--color-danger); border: 0; cursor: pointer; padding: var(--space-2); border-radius: var(--radius-md); line-height: 0; }
+.btn-danger-ghost:hover { background: color-mix(in srgb, var(--color-danger) 14%, transparent); }
+
+/* empty */
+.empty { border: 1px dashed var(--color-border); border-radius: var(--radius-lg); padding: var(--space-12) var(--space-6); text-align: center; color: var(--color-text-muted); }
+.empty .link { background: none; border: 0; color: var(--color-primary); font-family: var(--font-heading); font-weight: 500; cursor: pointer; font-size: var(--text-body); margin-top: var(--space-3); }
+.empty .link:hover { text-decoration: underline; }
+
+/* modal */
+.backdrop { position: fixed; inset: 0; background: rgba(33,28,40,.45); display: flex; align-items: flex-end; justify-content: center; padding: 0; z-index: 50; }
+@media (min-width: 600px) { .backdrop { align-items: center; padding: var(--space-4); } }
+.modal { background: var(--color-surface); width: 100%; max-width: 460px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: var(--space-6); max-height: 92vh; overflow-y: auto; }
+@media (min-width: 600px) { .modal { border-radius: var(--radius-lg); } }
+.modal .mhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+.modal .mhead h2 { font-size: var(--text-h1); font-weight: 600; }
+.x-btn { background: none; border: 0; color: var(--color-text-faint); cursor: pointer; font-size: 22px; line-height: 1; padding: 0 var(--space-1); }
+.x-btn:hover { color: var(--color-text); }
+.field-label { display: block; font-family: var(--font-heading); font-weight: 500; font-size: var(--text-caption); color: var(--color-text-muted); margin: var(--space-4) 0 var(--space-1); }
+.field { width: 100%; font-family: var(--font-body); font-size: var(--text-body); color: var(--color-text); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); }
+.field:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; border-color: var(--color-primary); }
+.row { display: flex; gap: var(--space-3); }
+.row > * { flex: 1; }
+.seg { display: flex; gap: var(--space-2); }
+.seg button { flex: 1; font-family: var(--font-heading); font-weight: 500; font-size: var(--text-small); padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-muted); cursor: pointer; transition: all .18s ease; }
+.seg button.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+[data-theme="dark"] .seg button.active { color: #211C28; }
+.hint { font-size: var(--text-caption); color: var(--color-text-faint); margin-top: var(--space-1); }
+.mactions { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-6); }
+.mactions .spacer { flex: 1; }
+.pace-box { background: var(--color-primary); color: #fff; border-radius: var(--radius-md); padding: var(--space-4); text-align: center; margin-top: var(--space-4); }
+[data-theme="dark"] .pace-box { color: #211C28; }
+.pace-box .k { font-family: var(--font-heading); font-weight: 600; letter-spacing: .1em; text-transform: uppercase; font-size: var(--text-caption); opacity: .85; }
+.pace-box .v { font-family: var(--font-heading); font-weight: 600; font-size: 26px; margin-top: 2px; }
+.modal p.intro { color: var(--color-text-muted); font-size: var(--text-small); margin: 0 0 var(--space-2); }
+
+footer { text-align: center; color: var(--color-text-faint); font-size: var(--text-caption); margin-top: var(--space-8); }
+@media (max-width: 560px) {
+  .head { flex-direction: row; }
+  .hero .verdict { margin-left: 0; width: 100%; text-align: left; max-width: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <div>
+      <p class="eyebrow">Alpha Read</p>
+      <h1>Your shelf</h1>
+      <div class="sub" id="quote"></div>
+    </div>
+    <div style="display:flex;gap:var(--space-2);flex:none;flex-wrap:wrap;justify-content:flex-end">
+      <button class="icon-btn" id="paceBtn" aria-label="Reading pace settings">Pace</button>
+      <button class="icon-btn" id="backupBtn" aria-label="Back up your data">Backup</button>
+      <button class="icon-btn" id="restoreBtn" aria-label="Restore from a backup">Restore</button>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle dark mode"><span id="themeIcon">☾</span><span id="themeLabel">Dark</span></button>
+    </div>
+  </header>
+  <input type="file" id="restoreInput" accept="application/json,.json" hidden>
+
+  <div class="hero" id="hero"></div>
+
+  <div class="controls" id="controls">
+    <button class="chip-btn active" data-filter="active">Reading now</button>
+    <button class="chip-btn" data-filter="month">Monthly</button>
+    <button class="chip-btn" data-filter="quarter">Quarterly</button>
+    <button class="chip-btn" data-filter="done">Finished</button>
+    <button class="chip-btn" data-filter="all">All</button>
+    <button class="btn btn-primary add-btn" data-action="add">+ Add book</button>
+  </div>
+
+  <div id="list"></div>
+
+  <footer>Alpha Read · saved on this device</footer>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+"use strict";
+const MS_DAY = 86400000;
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const QUOTES = [
+  "A reader lives a thousand lives. Go claim today's.",
+  "Pages don't read themselves \u2014 you've got this.",
+  "Small daily reps, big yearly mind.",
+  "The book you finish is the one you open today.",
+  "Momentum is built one chapter at a time.",
+  "Show up for the page. The page shows up for you.",
+  "Discipline now, finished shelf later.",
+];
+
+/* ---------- storage ---------- */
+const KEY_BOOKS = "alpharead:books";
+const KEY_SETTINGS = "alpharead:settings";
+const KEY_THEME = "alpharead:theme";
+
+let books = load(KEY_BOOKS, []);
+let settings = load(KEY_SETTINGS, { morningMin: 15, nightMin: 20, pagesPerMin: 2 });
+let filter = "active";
+let editingId = null; // inline page editor
+
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { return fallback; }
+}
+function saveBooks() { try { localStorage.setItem(KEY_BOOKS, JSON.stringify(books)); } catch (e) {} }
+function saveSettings() { try { localStorage.setItem(KEY_SETTINGS, JSON.stringify(settings)); } catch (e) {} }
+
+/* ---------- theme ---------- */
+(function initTheme() {
+  let t = localStorage.getItem(KEY_THEME);
+  if (!t) t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  applyTheme(t);
+})();
+function applyTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  document.getElementById("themeIcon").textContent = t === "dark" ? "\u2600" : "\u263e";
+  document.getElementById("themeLabel").textContent = t === "dark" ? "Light" : "Dark";
+}
+document.getElementById("themeBtn").addEventListener("click", function () {
+  const t = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  localStorage.setItem(KEY_THEME, t);
+  applyTheme(t);
+});
+
+/* ---------- dates ---------- */
+function todayMid() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function parseISO(s) { const p = s.split("-").map(Number); return new Date(p[0], p[1]-1, p[2]); }
+function toISO(d) { return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function fmt(d) { return d.toLocaleDateString(undefined, { day:"numeric", month:"short", year:"numeric" }); }
+function endOfMonth(y, m) { return new Date(y, m+1, 0); }
+function endOfQuarter(y, q) { return endOfMonth(y, q*3+2); }
+
+/* ---------- maths ---------- */
+function baselinePace() { return (Number(settings.morningMin) + Number(settings.nightMin)) * Number(settings.pagesPerMin); }
+
+function analyze(b) {
+  const today = todayMid();
+  const deadline = parseISO(b.deadline);
+  const start = parseISO(b.startDate);
+  const total = Number(b.totalPages) || 0;
+  const current = Math.min(Number(b.currentPage) || 0, total);
+  const pagesLeft = Math.max(0, total - current);
+  const pct = total > 0 ? Math.min(100, current/total*100) : 0;
+  const daysLeft = Math.round((deadline - today)/MS_DAY) + 1;
+  const done = pagesLeft === 0 && total > 0;
+  const overdue = !done && daysLeft <= 0;
+  const requiredPerDay = (!done && daysLeft > 0) ? Math.ceil(pagesLeft / daysLeft) : 0;
+  const ppm = Number(settings.pagesPerMin) || 1;
+  const minutesPerDay = Math.round(requiredPerDay / ppm);
+  const span = Math.max(1, Math.round((deadline - start)/MS_DAY) + 1);
+  const elapsed = Math.round((today - start)/MS_DAY) + 1;
+  const frac = Math.min(1, Math.max(0, elapsed/span));
+  const expectedPct = total > 0 ? Math.min(100, (Math.round(total*frac))/total*100) : 0;
+  const base = baselinePace();
+  const ratio = base > 0 ? requiredPerDay/base : 0;
+  let status, tone;
+  if (done) { status = "Finished"; tone = "var(--color-secondary)"; }
+  else if (overdue) { status = "Past deadline"; tone = "var(--color-danger)"; }
+  else if (ratio <= 0.7) { status = "Ahead"; tone = "var(--color-success)"; }
+  else if (ratio <= 1.0) { status = "On track"; tone = "var(--color-success)"; }
+  else if (ratio <= 1.3) { status = "Behind"; tone = "var(--color-warning)"; }
+  else { status = "Way behind"; tone = "var(--color-danger)"; }
+  return { total, current, pagesLeft, pct, daysLeft, done, overdue, requiredPerDay, minutesPerDay, expectedPct, status, tone, deadline };
+}
+
+function esc(s) { return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+
+/* ---------- render ---------- */
+function render() {
+  document.getElementById("quote").textContent = QUOTES[todayMid().getDate() % QUOTES.length];
+
+  const analyzed = books.map(function(b){ return { b: b, a: analyze(b) }; });
+  const base = baselinePace();
+  const ppm = Number(settings.pagesPerMin) || 1;
+  const pagesToday = analyzed.filter(function(x){ return !x.a.done && !x.a.overdue; })
+    .reduce(function(s,x){ return s + x.a.requiredPerDay; }, 0);
+  const minsToday = Math.round(pagesToday / ppm);
+
+  let verdict;
+  if (pagesToday === 0) verdict = "Nothing due \u2014 pick up a book.";
+  else if (pagesToday <= base) verdict = "Comfortable for today.";
+  else verdict = "Above your usual \u2014 find a few extra minutes.";
+
+  document.getElementById("hero").innerHTML =
+    '<div class="blk"><div class="k">On track today</div>' +
+    '<div class="big">' + pagesToday + ' <small>pages</small></div>' +
+    '<div class="note">\u2248 ' + minsToday + ' min of reading</div></div>' +
+    '<div class="divider"></div>' +
+    '<div class="blk"><div class="k">Your usual pace</div>' +
+    '<div class="big">' + base + ' <small>/day</small></div>' +
+    '<div class="note">' + settings.morningMin + '+' + settings.nightMin + ' min \u00b7 ' + settings.pagesPerMin + ' pg/min</div></div>' +
+    '<div class="verdict">' + verdict + '</div>';
+
+  const shown = analyzed.filter(function(x){
+    if (filter === "done") return x.a.done;
+    if (filter === "active") return !x.a.done;
+    if (filter === "month") return !x.a.done && x.b.period === "month";
+    if (filter === "quarter") return !x.a.done && x.b.period === "quarter";
+    return true;
+  });
+
+  const list = document.getElementById("list");
+  if (shown.length === 0) {
+    list.innerHTML = '<div class="empty">' +
+      (books.length === 0 ? "No books on the shelf yet." : "Nothing in this view.") +
+      '<br><button class="link" data-action="add">Add a book</button></div>';
+    return;
+  }
+
+  list.innerHTML = shown.map(function(x){ return cardHTML(x.b, x.a); }).join("");
+}
+
+function cardHTML(b, a) {
+  const editing = editingId === b.id;
+  let statsBlock;
+  if (a.done) {
+    statsBlock = '<div class="finished-row">\u2713 Finished \u2014 nice work.</div>';
+  } else {
+    statsBlock =
+      '<div class="stats">' +
+        '<div class="stat"><div class="v">' + a.requiredPerDay + '</div><div class="l">pages/day needed</div></div>' +
+        '<div class="stat"><div class="v">' + a.minutesPerDay + '</div><div class="l">min/day from here</div></div>' +
+        '<div class="stat"><div class="v">' + (a.overdue ? "\u2014" : a.daysLeft) + '</div><div class="l">' + (a.overdue ? "overdue" : "days left") + '</div></div>' +
+      '</div>' +
+      '<div class="togo">Due ' + fmt(a.deadline) + '. <b>' + a.pagesLeft + ' pages</b> to go from page ' + a.current + ' to the finish.</div>';
+  }
+
+  const marker = a.done ? "" : '<div class="pmarker" style="left:calc(' + a.expectedPct + '% - 1px)" title="Where you should be today"></div>';
+  const metaRight = Math.round(a.pct) + "%" + (a.done ? "" : " \u00b7 \u258f marker = today\u2019s target");
+
+  const logBlock = editing
+    ? '<div class="log-edit"><span>I\u2019m up to page</span>' +
+      '<input class="page-input" type="number" id="pageinput-' + b.id + '" value="' + a.current + '" min="0" max="' + a.total + '">' +
+      '<button class="btn btn-primary" data-action="save-page" data-id="' + b.id + '">Save</button>' +
+      '<button class="btn btn-ghost" data-action="cancel-page">Cancel</button></div>'
+    : '<button class="log-toggle" data-action="edit-page" data-id="' + b.id + '">' + (a.done ? "Update page" : "Log today\u2019s page \u2192") + '</button>';
+
+  return '<div class="book" style="--tone:' + a.tone + '">' +
+    '<div class="top"><div>' +
+      '<div class="badges">' +
+        '<span class="pill tone"><span class="dot"></span>' + a.status + '</span>' +
+        '<span class="period-tag">' + esc(b.periodLabel) + '</span>' +
+      '</div>' +
+      '<h3>' + esc(b.title) + '</h3>' +
+      (b.author ? '<div class="author">' + esc(b.author) + '</div>' : '') +
+    '</div>' +
+    '<button class="edit-icon" data-action="edit-book" data-id="' + b.id + '" aria-label="Edit book">\u270e</button></div>' +
+    '<div class="pwrap"><div class="ptrack">' +
+      '<div class="pfill" style="width:' + a.pct + '%"></div>' + marker +
+    '</div>' +
+    '<div class="pmeta"><span>p.' + a.current + ' / ' + a.total + '</span><span>' + metaRight + '</span></div></div>' +
+    statsBlock +
+    '<div class="logbar">' + logBlock + '</div>' +
+  '</div>';
+}
+
+/* ---------- events (delegated) ---------- */
+document.getElementById("controls").addEventListener("click", function(e){
+  const f = e.target.closest("[data-filter]");
+  if (f) {
+    filter = f.getAttribute("data-filter");
+    document.querySelectorAll("#controls .chip-btn").forEach(function(c){ c.classList.toggle("active", c === f); });
+    render();
+  }
+});
+
+document.body.addEventListener("click", function(e){
+  const el = e.target.closest("[data-action]");
+  if (!el) return;
+  const action = el.getAttribute("data-action");
+  const id = el.getAttribute("data-id");
+
+  if (action === "add") { openBookModal(null); }
+  else if (action === "edit-book") { openBookModal(findBook(id)); }
+  else if (action === "edit-page") { editingId = id; render(); focusPageInput(id); }
+  else if (action === "cancel-page") { editingId = null; render(); }
+  else if (action === "save-page") {
+    const input = document.getElementById("pageinput-" + id);
+    const b = findBook(id);
+    if (b && input) {
+      let n = parseInt(input.value, 10); if (isNaN(n)) n = 0;
+      b.currentPage = Math.max(0, Math.min(Number(b.totalPages)||0, n));
+      saveBooks();
+    }
+    editingId = null; render();
+  }
+});
+
+function findBook(id) { return books.filter(function(b){ return b.id === id; })[0]; }
+function focusPageInput(id) { const i = document.getElementById("pageinput-" + id); if (i) { i.focus(); i.select(); } }
+
+/* ---------- book modal ---------- */
+function openBookModal(book) {
+  const now = todayMid();
+  const isEdit = !!book;
+  const st = {
+    title: book ? book.title : "",
+    author: book ? book.author || "" : "",
+    totalPages: book ? book.totalPages : "",
+    currentPage: book ? book.currentPage : 0,
+    period: book ? book.period : "month",
+    year: book ? book.year : now.getFullYear(),
+    month: book ? book.month : now.getMonth(),
+    quarter: book ? (book.quarter != null ? book.quarter : Math.floor(now.getMonth()/3)) : Math.floor(now.getMonth()/3),
+    deadline: book ? book.deadline : ""
+  };
+  const years = [now.getFullYear(), now.getFullYear()+1];
+
+  function computedDeadline() {
+    return st.period === "month" ? toISO(endOfMonth(st.year, st.month)) : toISO(endOfQuarter(st.year, st.quarter));
+  }
+  if (!st.deadline) st.deadline = computedDeadline();
+
+  const root = document.getElementById("modalRoot");
+  root.innerHTML =
+    '<div class="backdrop" id="backdrop"><div class="modal" id="modal">' +
+      '<div class="mhead"><h2>' + (isEdit ? "Edit book" : "Add a book") + '</h2><button class="x-btn" data-close>\u00d7</button></div>' +
+      '<label class="field-label">Title</label>' +
+      '<input class="field" id="f-title" placeholder="e.g. Atomic Habits" value="' + esc(st.title) + '">' +
+      '<label class="field-label">Author (optional)</label>' +
+      '<input class="field" id="f-author" placeholder="James Clear" value="' + esc(st.author) + '">' +
+      '<div class="row"><div><label class="field-label">Total pages</label>' +
+        '<input class="field" id="f-total" type="number" placeholder="320" value="' + (st.totalPages || "") + '"></div>' +
+        '<div><label class="field-label">Currently on page</label>' +
+        '<input class="field" id="f-current" type="number" placeholder="0" value="' + (st.currentPage || 0) + '"></div></div>' +
+      '<label class="field-label">Read it during</label>' +
+      '<div class="seg" id="f-period">' +
+        '<button data-period="month" class="' + (st.period==="month"?"active":"") + '">A month</button>' +
+        '<button data-period="quarter" class="' + (st.period==="quarter"?"active":"") + '">A quarter</button></div>' +
+      '<div class="row" style="margin-top:var(--space-3)">' +
+        '<select class="field" id="f-mq"></select>' +
+        '<select class="field" id="f-year">' + years.map(function(y){ return '<option value="'+y+'"'+(y===st.year?" selected":"")+'>'+y+'</option>'; }).join("") + '</select></div>' +
+      '<label class="field-label">Deadline</label>' +
+      '<input class="field" id="f-deadline" type="date" value="' + st.deadline + '">' +
+      '<div class="hint" id="f-hint"></div>' +
+      '<div class="mactions">' +
+        (isEdit ? '<button class="btn-danger-ghost" id="f-delete" aria-label="Delete book">\uD83D\uDDD1</button>' : '') +
+        '<div class="spacer"></div>' +
+        '<button class="btn btn-ghost" data-close>Cancel</button>' +
+        '<button class="btn btn-primary" id="f-save">' + (isEdit ? "Save changes" : "Add to shelf") + '</button>' +
+      '</div>' +
+    '</div></div>';
+
+  function periodLabel() { return st.period === "month" ? (MONTHS[st.month] + " " + st.year) : ("Q" + (st.quarter+1) + " " + st.year); }
+  function refreshMQ() {
+    const sel = document.getElementById("f-mq");
+    if (st.period === "month") {
+      sel.innerHTML = MONTHS.map(function(m,i){ return '<option value="'+i+'"'+(i===st.month?" selected":"")+'>'+m+'</option>'; }).join("");
+    } else {
+      sel.innerHTML = [0,1,2,3].map(function(q){ return '<option value="'+q+'"'+(q===st.quarter?" selected":"")+'>Q'+(q+1)+' ('+MONTHS[q*3]+'\u2013'+MONTHS[q*3+2]+')</option>'; }).join("");
+    }
+  }
+  function refreshDeadline() {
+    st.deadline = computedDeadline();
+    document.getElementById("f-deadline").value = st.deadline;
+    document.getElementById("f-hint").textContent = "Defaults to the end of " + periodLabel() + ". Change it for a custom target.";
+  }
+  refreshMQ();
+  document.getElementById("f-hint").textContent = "Defaults to the end of " + periodLabel() + ". Change it for a custom target.";
+
+  // wiring
+  root.querySelectorAll("[data-close]").forEach(function(b){ b.addEventListener("click", closeModal); });
+  document.getElementById("backdrop").addEventListener("click", function(e){ if (e.target.id === "backdrop") closeModal(); });
+  document.getElementById("f-period").addEventListener("click", function(e){
+    const btn = e.target.closest("[data-period]"); if (!btn) return;
+    st.period = btn.getAttribute("data-period");
+    this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("active", x === btn); });
+    refreshMQ(); refreshDeadline();
+  });
+  document.getElementById("f-mq").addEventListener("change", function(){
+    const v = Number(this.value); if (st.period === "month") st.month = v; else st.quarter = v; refreshDeadline();
+  });
+  document.getElementById("f-year").addEventListener("change", function(){ st.year = Number(this.value); refreshDeadline(); });
+  document.getElementById("f-deadline").addEventListener("change", function(){ st.deadline = this.value; });
+
+  if (isEdit) {
+    document.getElementById("f-delete").addEventListener("click", function(){
+      books = books.filter(function(x){ return x.id !== book.id; });
+      saveBooks(); closeModal(); render();
+    });
+  }
+
+  document.getElementById("f-save").addEventListener("click", function(){
+    const title = document.getElementById("f-title").value.trim();
+    const total = Number(document.getElementById("f-total").value);
+    if (!title || !(total > 0)) {
+      if (!title) document.getElementById("f-title").focus();
+      else document.getElementById("f-total").focus();
+      return;
+    }
+    const data = {
+      title: title,
+      author: document.getElementById("f-author").value.trim(),
+      totalPages: total,
+      currentPage: Number(document.getElementById("f-current").value) || 0,
+      period: st.period, year: st.year, month: st.month, quarter: st.quarter,
+      deadline: document.getElementById("f-deadline").value || computedDeadline(),
+      periodLabel: periodLabel()
+    };
+    if (isEdit) {
+      Object.assign(book, data);
+    } else {
+      books.push(Object.assign({ id: String(Date.now()) + Math.floor(Math.random()*1000), startDate: toISO(todayMid()) }, data));
+    }
+    saveBooks(); closeModal(); render();
+  });
+
+  document.getElementById("f-title").focus();
+}
+
+/* ---------- settings modal ---------- */
+function openSettings() {
+  const root = document.getElementById("modalRoot");
+  function base(m,n,p){ return (Number(m)+Number(n))*Number(p); }
+  root.innerHTML =
+    '<div class="backdrop" id="backdrop"><div class="modal">' +
+      '<div class="mhead"><h2>Your reading pace</h2><button class="x-btn" data-close>\u00d7</button></div>' +
+      '<p class="intro">Used to judge whether you\u2019re on track and to size your daily target.</p>' +
+      '<div class="row">' +
+        '<div><label class="field-label">Morning min</label><input class="field" id="s-m" type="number" value="' + settings.morningMin + '"></div>' +
+        '<div><label class="field-label">Night min</label><input class="field" id="s-n" type="number" value="' + settings.nightMin + '"></div>' +
+        '<div><label class="field-label">Pages/min</label><input class="field" id="s-p" type="number" step="0.5" value="' + settings.pagesPerMin + '"></div>' +
+      '</div>' +
+      '<div class="pace-box"><div class="k">Usual daily pace</div><div class="v" id="s-base">' + base(settings.morningMin,settings.nightMin,settings.pagesPerMin) + ' pages/day</div></div>' +
+      '<div class="mactions"><div class="spacer"></div>' +
+        '<button class="btn btn-ghost" data-close>Cancel</button>' +
+        '<button class="btn btn-primary" id="s-save">Save</button></div>' +
+    '</div></div>';
+
+  function recalc() {
+    document.getElementById("s-base").textContent = base(
+      document.getElementById("s-m").value, document.getElementById("s-n").value, document.getElementById("s-p").value
+    ) + " pages/day";
+  }
+  ["s-m","s-n","s-p"].forEach(function(idn){ document.getElementById(idn).addEventListener("input", recalc); });
+  root.querySelectorAll("[data-close]").forEach(function(b){ b.addEventListener("click", closeModal); });
+  document.getElementById("backdrop").addEventListener("click", function(e){ if (e.target.id === "backdrop") closeModal(); });
+  document.getElementById("s-save").addEventListener("click", function(){
+    settings = {
+      morningMin: Number(document.getElementById("s-m").value) || 0,
+      nightMin: Number(document.getElementById("s-n").value) || 0,
+      pagesPerMin: Number(document.getElementById("s-p").value) || 1
+    };
+    saveSettings(); closeModal(); render();
+  });
+}
+
+function closeModal() { document.getElementById("modalRoot").innerHTML = ""; }
+
+document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeModal(); });
+
+/* settings entry */
+document.getElementById("paceBtn").addEventListener("click", openSettings);
+
+/* ---------- backup / restore ---------- */
+function flash(msg) {
+  let t = document.getElementById("flash");
+  if (!t) { t = document.createElement("div"); t.id = "flash";
+    t.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--color-primary);color:#fff;padding:12px 16px;border-radius:10px;font-family:var(--font-heading);font-size:14px;z-index:90;box-shadow:0 6px 20px rgba(0,0,0,.18);max-width:90%";
+    document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = "1";
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.style.opacity = "0"; }, 2600);
+}
+
+document.getElementById("backupBtn").addEventListener("click", function(){
+  const payload = { app: "alpha-read", version: 1, exportedAt: new Date().toISOString(), books: books, settings: settings };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "alpha-read-backup-" + toISO(todayMid()) + ".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  flash("Backup saved \u2014 " + books.length + " book" + (books.length===1?"":"s") + ".");
+});
+
+document.getElementById("restoreBtn").addEventListener("click", function(){
+  document.getElementById("restoreInput").click();
+});
+document.getElementById("restoreInput").addEventListener("change", function(e){
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(){
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || !Array.isArray(data.books)) throw new Error("not an Alpha Read backup");
+      const n = data.books.length;
+      if (!window.confirm("Restore " + n + " book" + (n===1?"":"s") + " from this backup? This replaces what's currently on this device.")) return;
+      books = data.books;
+      if (data.settings) settings = data.settings;
+      saveBooks(); saveSettings(); render();
+      flash("Restored " + n + " book" + (n===1?"":"s") + ".");
+    } catch (err) {
+      flash("That file isn't a valid backup.");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+render();
+</script>
+</body>
+</html>
